@@ -71,28 +71,28 @@
 //     } = theme.useToken();
 
 //     return (
-//         <Layout style={{ minHeight: '100vh' }}>
-//             <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-//             {collapsed ? (
-//           <div style={{ margin: '16px ', display: 'flex', justifyContent: 'center' }}>
-//             <img src="/vercel.svg" alt="Vercel Logo" style={{ height: 40, transform: 'scale(1.2)' }} />
-//           </div>
-//         ) : (
-//           <div style={{ display: 'flex', alignItems: 'center', margin: '16px' }}>
-//             <img src="/logo.png" alt="OctaVertex Media Logo" style={{ height: 40, marginRight: '16px' }} />
+  //       <Layout style={{ minHeight: '100vh' }}>
+  //           <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+  //           {collapsed ? (
+  //         <div style={{ margin: '16px ', display: 'flex', justifyContent: 'center' }}>
+  //           <img src="/vercel.svg" alt="Vercel Logo" style={{ height: 40, transform: 'scale(1.2)' }} />
+  //         </div>
+  //       ) : (
+  //         <div style={{ display: 'flex', alignItems: 'center', margin: '16px' }}>
+  //           <img src="/logo.png" alt="OctaVertex Media Logo" style={{ height: 40, marginRight: '16px' }} />
           
-//           </div>
-//         )}
-//                 <FilterSidebar filters={filters} onFilterChange={handleFilterChange}  />
-//             </Sider>
-//             <Layout>
-//             <Header style={{ padding: '0 16px', background: '#001529', display: 'flex', justifyContent: 'center', alignItems: 'center', height: 72}}>
-//   <div style={{ display: 'flex', alignItems: 'center' }}>
-//     {/* Your logo and company name go here */}
-//   </div>
-//   <h2 style={{ color: '#fff', fontSize: '1.4rem', fontWeight: '600', margin: 0 }}>
-//     January 2025 Social Media Content Calendar
-//   </h2>
+  //         </div>
+  //       )}
+  //               <FilterSidebar filters={filters} onFilterChange={handleFilterChange}  />
+  //           </Sider>
+  //           <Layout>
+  //           <Header style={{ padding: '0 16px', background: '#001529', display: 'flex', justifyContent: 'center', alignItems: 'center', height: 72}}>
+  // <div style={{ display: 'flex', alignItems: 'center' }}>
+  //   {/* Your logo and company name go here */}
+  // </div>
+  // <h2 style={{ color: '#fff', fontSize: '1.4rem', fontWeight: '600', margin: 0 }}>
+  //   January 2025 Social Media Content Calendar
+  // </h2>
 // </Header>
 
 //                 <Content style={{ margin: '24px 16px 0' }}>
@@ -185,42 +185,29 @@ export default function Home() {
   } = theme.useToken();
 
   return (
+    
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-        {collapsed ? (
-          <div style={{ height: 32, margin: 16, textAlign: 'center' }}>
-            <Avatar src="/vercel.svg" style={{ transform: 'scale(1.5)' }} />
-          </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', margin: 16 }}>
-            <Avatar src="/logo.png" style={{ marginRight: 16 }} />
-            <span style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold' }}>
-              OctaVertex Media
-            </span>
-          </div>
-        )}
-        <FilterSidebar filters={filters} onFilterChange={handleFilterChange} isDarkMode={colorScheme === 'dark'} />
-      </Sider>
-      <Layout>
-        <Header
-          style={{
-            padding: 0,
-            background: colorScheme === 'dark' ? '#001529' : '#001529',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            height: 40,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', marginRight: 24 }}>
-            <a
-              href="https://github.com/manishkrsingh071/social-calendar"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <GithubOutlined style={{ fontSize: '24px', color: colorScheme === 'dark' ? '#fff' : '#fff' }} />
-            </a>
-          </div>
+    <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+    {collapsed ? (
+  <div style={{ margin: '16px ', display: 'flex', justifyContent: 'center' }}>
+    <img src="/vercel.svg" alt="Vercel Logo" style={{ height: 40, transform: 'scale(1.2)' }} />
+  </div>
+) : (
+  <div style={{ display: 'flex', alignItems: 'center', margin: '16px' }}>
+    <img src="/logo.png" alt="OctaVertex Media Logo" style={{ height: 40, marginRight: '16px' }} />
+  
+  </div>
+)}
+        <FilterSidebar filters={filters} onFilterChange={handleFilterChange}  />
+    </Sider>
+    <Layout>
+    <Header style={{ padding: '0 16px', background: '#001529', display: 'flex', justifyContent: 'center', alignItems: 'center', height: 72}}>
+<div style={{ display: 'flex', alignItems: 'center' }}>
+{/* Your logo and company name go here */}
+</div>
+<h2 style={{ color: '#fff', fontSize: '1.4rem', fontWeight: '600', margin: 0 }}>
+January 2025 Social Media Content Calendar
+</h2>
         </Header>
         <Content style={{ margin: '24px 16px 0' }}>
           <div style={{ padding: 24, minHeight: 360, background: colorBgContainer }}>
