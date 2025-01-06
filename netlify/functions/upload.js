@@ -2,6 +2,12 @@ const { getStore } = require('@netlify/blobs');
 
 exports.handler = async (event) => {
   // CORS is handled by the redirect rule in netlify.toml, no headers needed here.
+  const siteId = process.env.NETLIFY_SITE_ID;
+  const token = process.env.NETLIFY_AUTH_TOKEN;
+
+  console.log('Site ID:', siteId);
+  console.log('Token:', token ? 'Token present' : 'Token missing');
+
 
   if (event.httpMethod !== 'POST') {
     return {

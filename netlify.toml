@@ -9,3 +9,8 @@
 
 [functions]
   directory = "netlify/functions"
+  included_files = [".env.production"]
+
+[functions.environment]
+  NETLIFY_SITE_ID = "312512fd-596a-48c3-80a8-db047fdf6e29"
+  NETLIFY_AUTH_TOKEN = "nfp_7VkfDQHCjeEnybeAntvjNzypS8eMGi3Qec63"
