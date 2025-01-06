@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@netlify/blobs": "^8.1.0",
     "@tabler/icons-react": "^2.47.0",
     "antd": "^5.22.7",
     "dayjs": "^1.11.13",
