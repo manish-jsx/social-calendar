@@ -397,7 +397,7 @@ export default function CalendarTable({ week, data, onUpload }) {
 
   return (
     <div>
-      <h2>Week {week}</h2>
+      <h2>{week}</h2>
       <Table
         columns={columns}
         dataSource={data}

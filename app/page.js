@@ -211,9 +211,6 @@ January 2025 Social Media Content Calendar
         </Header>
         <Content style={{ margin: '24px 16px 0' }}>
           <div style={{ padding: 24, minHeight: 360, background: colorBgContainer }}>
-            <h2 style={{ textAlign: 'center', marginBottom: 24 }}>
-              January 2025 Social Media Content Calendar
-            </h2>
             {Object.keys(groupedData).map((week) => (
               <CalendarTable
                 key={week}
