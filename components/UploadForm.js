@@ -134,10 +134,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Modal, Upload, message, Input, Progress, Button } from 'antd';
+import { Modal, Upload, message, Input, Progress, Button, Typography } from 'antd'; // Import Typography
 import { IconFileUpload, IconX, IconFile, IconCamera, IconMovie, IconCircleCheck } from '@tabler/icons-react';
 
 const { TextArea } = Input;
+const { Text } = Typography; 
 
 export default function UploadForm({ item, onUpload, visible, onClose }) {
   const [fileList, setFileList] = useState([]);
@@ -157,60 +158,76 @@ export default function UploadForm({ item, onUpload, visible, onClose }) {
     }
   }, [visible]);
 
-  const handleFileUpload = async (file) => {
-    if (!file) return;
-
-    setUploading(true);
-    setUploadProgress(0);
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-
-    reader.onload = async () => {
-      const base64Data = reader.result.split(',')[1];
-
-      try {
-        const response = await fetch('/.netlify/functions/upload', {
-          method: 'POST',
-          body: JSON.stringify({
-            file: {
-              type: file.type,
-              base64: base64Data,
-            },
-            metadata: {
-              originalName: file.name,
-            },
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          message.success('Upload successful.');
-          onUpload(item.id, {
-            type: file.type.startsWith('image/') ? 'image' : 'video',
-            url: data.url,
-            file: file,
+  const handleUpload = async () => {
+    if (fileList.length === 0 && (!textInputRef.current || !textInputRef.current.value)) {
+      message.error('Please select a file or enter text content.');
+      return;
+    }
+  
+    if (fileList.length > 0) {
+      // File upload logic
+      const file = fileList[0];
+      setUploading(true);
+      setUploadProgress(0);
+  
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+  
+      reader.onload = async () => {
+        const base64Data = reader.result.split(',')[1];
+  
+        try {
+          const response = await fetch('/.netlify/functions/upload', {
+            method: 'POST',
+            body: JSON.stringify({
+              file: {
+                type: file.type,
+                base64: base64Data,
+              },
+              metadata: {
+                originalName: file.name,
+              },
+            }),
           });
-          setFileList([]);
-        } else {
+  
+          if (response.ok) {
+            const data = await response.json();
+            message.success('Upload successful.');
+            onUpload(item.id, {
+              type: file.type.startsWith('image/') ? 'image' : 'video',
+              url: data.url,
+              file: file,
+            });
+            setFileList([]);
+          } else {
+            message.error('Upload failed.');
+          }
+        } catch (error) {
+          console.error('Upload error:', error);
           message.error('Upload failed.');
+        } finally {
+          setUploading(false);
+          setUploadProgress(0);
         }
-      } catch (error) {
-        console.error('Upload error:', error);
+      };
+  
+      reader.onerror = () => {
+        console.error('Error reading file.');
         message.error('Upload failed.');
-      } finally {
         setUploading(false);
         setUploadProgress(0);
-      }
-    };
-
-    reader.onerror = () => {
-      console.error('Error reading file.');
-      message.error('Upload failed.');
-      setUploading(false);
-      setUploadProgress(0);
-    };
+      };
+    } else if (textInputRef.current && textInputRef.current.value) {
+      // Text upload logic
+      const text = textInputRef.current.value;
+      const content = { type: 'text', text };
+      onUpload(item.id, content);
+      message.success('Text content saved.');
+    }
+  
+    onClose();
   };
+  
 
   const handleTextChange = (e) => {
     const text = e.target.value;
@@ -239,7 +256,7 @@ export default function UploadForm({ item, onUpload, visible, onClose }) {
       setFileList(newFileList);
     },
     beforeUpload: (file) => {
-      setFileList([...fileList, file]);
+      setFileList([file]);
       return false; // Prevent default upload behavior
     },
     fileList,
