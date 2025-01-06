@@ -1,5 +1,6 @@
+
 import { ConfigProvider } from 'antd';
-// Import antd CSS file
+
 import 'antd/dist/reset.css'; 
 
 export default function RootLayout({ children }) {

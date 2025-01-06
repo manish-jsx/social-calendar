@@ -1,238 +1,154 @@
-// 'use client';
-
-// import { useState, useRef, useEffect } from 'react';
-// import { Modal, Upload, message, Input, Progress, Button, Text } from 'antd';
-// import { IconFileUpload, IconX, IconFile, IconCamera, IconMovie, IconCircleCheck } from '@tabler/icons-react';
-
-// const { TextArea } = Input;
-
-// export default function UploadForm({ item, onUpload, visible, onClose }) {
-//   const [fileList, setFileList] = useState([]);
-//   const [uploadProgress, setUploadProgress] = useState(0);
-//   const [uploading, setUploading] = useState(false);
-//   const fileInputRef = useRef(null);
-//   const textInputRef = useRef(null);
-
-//   useEffect(() => {
-//     if (!visible) {
-//       setFileList([]);
-//       setUploadProgress(0);
-//       setUploading(false);
-//       if (textInputRef.current) {
-//         textInputRef.current.value = '';
-//       }
-//     }
-//   }, [visible]);
-
-//   const handleUpload = () => {
-//     const formData = new FormData();
-//     fileList.forEach((file) => {
-//       formData.append('files[]', file);
-//     });
-
-//     setUploading(true);
-
-//     // Simulate upload with progress
-//     let progress = 0;
-//     const interval = setInterval(() => {
-//       progress += 10;
-//       setUploadProgress(progress);
-//       if (progress >= 100) {
-//         clearInterval(interval);
-//         setUploading(false);
-//         message.success('Upload successful.');
-//         const uploadedContent = {
-//           type: fileList[0]?.type.startsWith('image/') ? 'image' : 'video',
-//           url: URL.createObjectURL(fileList[0]),
-//           file: fileList[0],
-//         };
-//         onUpload(item.id, uploadedContent);
-//         onClose();
-//         setFileList([]);
-//       }
-//     }, 200);
-//   };
-
-//   const handleTextChange = (e) => {
-//     const text = e.target.value;
-//     const content = { type: 'text', text };
-//     onUpload(item.id, content);
-//   };
-
-//   const getFormatIcon = (format) => {
-//     switch (format) {
-//       case 'Image':
-//       case 'Image Carousel':
-//         return <IconCamera size="1.2rem" />;
-//       case 'Video':
-//       case 'Video/Reels':
-//         return <IconMovie size="1.2rem" />;
-//       default:
-//         return <IconFile size="1.2rem" />;
-//     }
-//   };
-
-//   const uploadProps = {
-//     onRemove: (file) => {
-//       const index = fileList.indexOf(file);
-//       const newFileList = fileList.slice();
-//       newFileList.splice(index, 1);
-//       setFileList(newFileList);
-//     },
-//     beforeUpload: (file) => {
-//       setFileList([...fileList, file]);
-//       return false; // Prevent default upload behavior
-//     },
-//     fileList,
-//   };
-
-//   return (
-//     <Modal
-//       title={item ? `Upload ${item.format} for ${item.day}` : 'Upload Content'}
-//       open={visible}
-//       onOk={handleUpload}
-//       confirmLoading={uploading}
-//       onCancel={onClose}
-//       okText="Upload"
-//       cancelText="Cancel"
-//       width={600}
-//     >
-//       <div style={{ marginBottom: '16px' }}>
-//         {/* Check if item exists before accessing item.format */}
-//         {item && ['Image', 'Video', 'Image Carousel', 'Video/Reels'].includes(item.format) && (
-//           <Upload {...uploadProps}>
-//             <Button icon={uploading ? <IconX size="1rem" /> : <IconFileUpload size="1.2rem" />}>
-//               {/* Check if item exists before accessing item.format */}
-//               {getFormatIcon(item.format)} Upload {item.format}
-//             </Button>
-//           </Upload>
-//         )}
-//         {/* Check if item exists before accessing item.format */}
-//         {item && ['Text', 'Text/Image', 'Article', 'Poll'].includes(item.format) && (
-//           <TextArea
-//             rows={4}
-//             placeholder="Enter text content"
-//             ref={textInputRef}
-//             onChange={handleTextChange}
-//             style={{ width: '100%' }}
-//           />
-//         )}
-//         {uploading && (
-//           <div style={{ marginTop: '16px' }}>
-//             <Progress percent={uploadProgress} size="small" status="active" />
-//             <Text size="xs" type="secondary" style={{ marginTop: '8px', textAlign: 'center' }}>
-//               {uploadProgress === 100 ? <IconCircleCheck size="0.8rem" /> : `Uploading... ${uploadProgress}%`}
-//             </Text>
-//           </div>
-//         )}
-//       </div>
-//     </Modal>
-//   );
-// }
-
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Modal, Upload, message, Input, Progress, Button, Typography } from 'antd'; // Import Typography
+import { Modal, Upload, message, Input, Progress, Button, Typography } from 'antd';
 import { IconFileUpload, IconX, IconFile, IconCamera, IconMovie, IconCircleCheck } from '@tabler/icons-react';
 
 const { TextArea } = Input;
-const { Text } = Typography; 
+const { Text } = Typography;
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm'];
 
 export default function UploadForm({ item, onUpload, visible, onClose }) {
   const [fileList, setFileList] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
   const textInputRef = useRef(null);
+  const uploadControllerRef = useRef(null);
 
   useEffect(() => {
     if (!visible) {
-      setFileList([]);
-      setUploadProgress(0);
-      setUploading(false);
-      if (textInputRef.current) {
-        textInputRef.current.value = '';
-      }
+      resetForm();
     }
+    return () => {
+      if (uploadControllerRef.current) {
+        uploadControllerRef.current.abort();
+      }
+    };
   }, [visible]);
+
+  const resetForm = () => {
+    setFileList([]);
+    setUploadProgress(0);
+    setUploading(false);
+    setError(null);
+    if (textInputRef.current) {
+      textInputRef.current.value = '';
+    }
+  };
+
+  const validateFile = (file) => {
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error(`File must be smaller than ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+    }
+
+    const allowedTypes = item.format.toLowerCase().includes('image') 
+      ? ALLOWED_IMAGE_TYPES 
+      : ALLOWED_VIDEO_TYPES;
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(`File type ${file.type} is not supported. Please upload ${item.format.toLowerCase()}`);
+    }
+
+    return true;
+  };
 
   const handleUpload = async () => {
     if (fileList.length === 0 && (!textInputRef.current || !textInputRef.current.value)) {
       message.error('Please select a file or enter text content.');
       return;
     }
-  
+
     if (fileList.length > 0) {
-      // File upload logic
       const file = fileList[0];
       setUploading(true);
+      setError(null);
       setUploadProgress(0);
-  
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-  
-      reader.onload = async () => {
-        const base64Data = reader.result.split(',')[1];
-  
-        try {
-          const response = await fetch('/.netlify/functions/upload', {
-            method: 'POST',
-            body: JSON.stringify({
-              file: {
-                type: file.type,
-                base64: base64Data,
-              },
-              metadata: {
-                originalName: file.name,
-              },
-            }),
-          });
-  
-          if (response.ok) {
-            const data = await response.json();
-            message.success('Upload successful.');
-            onUpload(item.id, {
-              type: file.type.startsWith('image/') ? 'image' : 'video',
-              url: data.url,
-              file: file,
-            });
-            setFileList([]);
-          } else {
-            message.error('Upload failed.');
-          }
-        } catch (error) {
-          console.error('Upload error:', error);
-          message.error('Upload failed.');
-        } finally {
-          setUploading(false);
-          setUploadProgress(0);
+
+      try {
+        validateFile(file);
+
+        uploadControllerRef.current = new AbortController();
+
+        const base64Data = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: uploadControllerRef.current.signal,
+          body: JSON.stringify({
+            file: {
+              type: file.type,
+              base64: base64Data,
+            },
+            metadata: {
+              originalName: file.name,
+              itemId: item.id,
+              contentType: file.type,
+              size: file.size,
+              uploadedAt: new Date().toISOString(),
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Upload failed.');
         }
-      };
-  
-      reader.onerror = () => {
-        console.error('Error reading file.');
-        message.error('Upload failed.');
-        setUploading(false);
+
+        const data = await response.json();
+        setUploadProgress(100);
+
+        message.success('Upload successful!');
+        onUpload(item.id, {
+          type: file.type.startsWith('image/') ? 'image' : 'video',
+          url: data.url,
+          metadata: {
+            id: data.id, 
+            type: file.type,
+            name: file.name,
+            size: file.size,
+          },
+        });
+
+        resetForm();
+        onClose();
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          message.info('Upload cancelled');
+        } else {
+          console.error('Upload error:', error);
+          setError(error.message);
+          message.error(error.message || 'Upload failed. Please try again.');
+        }
         setUploadProgress(0);
-      };
-    } else if (textInputRef.current && textInputRef.current.value) {
-      // Text upload logic
+      } finally {
+        setUploading(false);
+        uploadControllerRef.current = null;
+      }
+    } else if (textInputRef.current?.value) {
       const text = textInputRef.current.value;
-      const content = { type: 'text', text };
-      onUpload(item.id, content);
+      onUpload(item.id, { type: 'text', text });
       message.success('Text content saved.');
+      resetForm();
+      onClose();
     }
-  
-    onClose();
   };
-  
 
   const handleTextChange = (e) => {
     const text = e.target.value;
-    const content = { type: 'text', text };
-    onUpload(item.id, content);
+    onUpload(item.id, { type: 'text', text });
   };
 
   const getFormatIcon = (format) => {
@@ -249,17 +165,24 @@ export default function UploadForm({ item, onUpload, visible, onClose }) {
   };
 
   const uploadProps = {
-    onRemove: (file) => {
-      const index = fileList.indexOf(file);
-      const newFileList = fileList.slice();
-      newFileList.splice(index, 1);
-      setFileList(newFileList);
+    onRemove: () => {
+      setFileList([]);
+      setError(null);
     },
     beforeUpload: (file) => {
-      setFileList([file]);
-      return false; // Prevent default upload behavior
+      try {
+        validateFile(file);
+        setFileList([file]);
+        setError(null);
+      } catch (err) {
+        message.error(err.message);
+      }
+      return false;
     },
     fileList,
+    accept: item?.format?.toLowerCase().includes('image') 
+      ? ALLOWED_IMAGE_TYPES.join(',')
+      : ALLOWED_VIDEO_TYPES.join(','),
   };
 
   return (
@@ -268,12 +191,23 @@ export default function UploadForm({ item, onUpload, visible, onClose }) {
       open={visible}
       onOk={handleUpload}
       confirmLoading={uploading}
-      onCancel={onClose}
+      onCancel={() => {
+        if (uploading && uploadControllerRef.current) {
+          uploadControllerRef.current.abort();
+        }
+        onClose();
+      }}
       okText="Upload"
       cancelText="Cancel"
       width={600}
     >
       <div style={{ marginBottom: '16px' }}>
+        {error && (
+          <div style={{ marginBottom: '16px', color: '#ff4d4f' }}>
+            {error}
+          </div>
+        )}
+        
         {item && ['Image', 'Video', 'Image Carousel', 'Video/Reels'].includes(item.format) && (
           <Upload {...uploadProps}>
             <Button icon={uploading ? <IconX size="1rem" /> : <IconFileUpload size="1.2rem" />}>
@@ -281,6 +215,7 @@ export default function UploadForm({ item, onUpload, visible, onClose }) {
             </Button>
           </Upload>
         )}
+        
         {item && ['Text', 'Text/Image', 'Article', 'Poll'].includes(item.format) && (
           <TextArea
             rows={4}
@@ -290,11 +225,19 @@ export default function UploadForm({ item, onUpload, visible, onClose }) {
             style={{ width: '100%' }}
           />
         )}
+        
         {uploading && (
           <div style={{ marginTop: '16px' }}>
-            <Progress percent={uploadProgress} size="small" status="active" />
+            <Progress percent={uploadProgress} size="small" status={error ? 'exception' : 'active'} />
             <Text size="xs" type="secondary" style={{ marginTop: '8px', textAlign: 'center' }}>
-              {uploadProgress === 100 ? <IconCircleCheck size="0.8rem" /> : `Uploading... ${uploadProgress}%`}
+              {uploadProgress === 100 ? (
+                <span>
+                  <IconCircleCheck size="0.8rem" style={{ marginRight: '4px' }} />
+                  Upload complete!
+                </span>
+              ) : (
+                `Uploading... ${uploadProgress}%`
+              )}
             </Text>
           </div>
         )}
